@@ -1,0 +1,156 @@
+#include <bits/stdc++.h>
+using namespace std;
+struct Cake {
+    string name;
+    double price;
+    int quantity;
+
+    double getAmount() const {
+        return price * quantity;
+    }
+};
+
+void displayCake(const Cake& cake) {
+    cout << "Name: " << cake.name << endl;
+    cout << "Price: " << fixed << setprecision(2) << cake.price << endl;
+    cout << "Quantity: " << cake.quantity << endl;
+    cout << "Amount: " << fixed << setprecision(2) << cake.getAmount() << endl;
+    cout << string(30, '-') << endl;
+}
+
+void viewCakes(const vector<Cake>& cakes) {
+    if (cakes.empty()) {
+        cout << "No cakes available.\n";
+        return;
+    }
+
+    for (const auto& cake : cakes) {
+        displayCake(cake);
+    }
+}
+
+void addCake(vector<Cake>& cakes) {
+    Cake newCake;
+
+    cout << "Enter cake name: ";
+    cin.ignore();
+    getline(cin, newCake.name);
+
+    cout << "Enter price of the cake: ";
+    while (!(cin >> newCake.price) || newCake.price < 0) {
+        cout << "Invalid price. Please enter a positive value: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    cout << "Enter quantity of the cake: ";
+    while (!(cin >> newCake.quantity) || newCake.quantity < 0) {
+        cout << "Invalid quantity. Please enter a non-negative value: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    cakes.push_back(newCake);
+    cout << "Cake added successfully!\n";
+}
+
+void searchCake(const vector<Cake>& cakes) {
+    string searchName;
+    cout << "Enter the name of the cake to search: ";
+    cin.ignore();
+    getline(cin, searchName);
+
+    bool found = false;
+    for (const auto& cake : cakes) {
+        if (cake.name == searchName) {
+            cout << "\nCake found:\n";
+            displayCake(cake);
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        cout << "Cake not found.\n";
+    }
+}
+
+void loadCakes(vector<Cake>& cakes, const string& filename) {
+    ifstream file(filename);
+    if (!file) {
+        cerr << "Error opening file: " << filename << endl;
+        return;
+    }
+
+    cakes.clear();
+    Cake cake;
+    while (getline(file, cake.name)) {
+        if (!(file >> cake.price >> cake.quantity)) {
+            cerr << "Error reading data. Skipping invalid entry.\n";
+            file.clear();
+            file.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+        file.ignore();
+        cakes.push_back(cake);
+    }
+
+    file.close();
+}
+
+void saveCakes(const vector<Cake>& cakes, const string& filename) {
+    ofstream file(filename);
+    if (!file) {
+        cerr << "Error opening file: " << filename << endl;
+        return;
+    }
+
+    for (const auto& cake : cakes) {
+        file << cake.name << '\n' << cake.price << '\n' << cake.quantity << '\n';
+    }
+
+    file.close();
+}
+
+int main() {
+    vector<Cake> cakes;
+    const string filename = "cakes.txt";
+
+    loadCakes(cakes, filename);
+
+    int choice;
+
+    do {
+        cout << "\nCake Shop Menu:\n";
+        cout << "1. Add Cake\n";
+        cout << "2. View Cakes\n";
+        cout << "3. Search Cake\n";
+        cout << "4. Exit\n";
+        cout << "Enter your choice: ";
+        while (!(cin >> choice)) {
+            cout << "Invalid input. Please enter a number between 1 and 4: ";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+
+        switch (choice) {
+            case 1:
+                addCake(cakes);
+                saveCakes(cakes, filename);
+                break;
+            case 2:
+                viewCakes(cakes);
+                break;
+            case 3:
+                searchCake(cakes);
+                break;
+            case 4:
+                cout << "Exiting program. Thank you!\n";
+                break;
+            default:
+                cout << "Invalid choice. Please try again.\n";
+        }
+    } while (choice != 4);
+
+    return 0;
+}
